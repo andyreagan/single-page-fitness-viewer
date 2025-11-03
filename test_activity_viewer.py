@@ -324,3 +324,70 @@ class TestCrossBrowser:
         # Content should still be visible
         expect(page.locator("#activityContent")).to_be_visible()
         expect(page.locator("#map")).to_be_visible()
+
+
+class TestD3Version:
+    """Test the D3.js version of the viewer."""
+
+    def test_page_loads(self, page: Page, base_url: str):
+        """Test that the D3 version page loads without errors."""
+        page.goto(f"{base_url}/test-cases/full-activity-d3/")
+        expect(page.locator("#activityContent")).to_be_visible(timeout=10000)
+
+    def test_activity_title(self, page: Page, base_url: str):
+        """Test that activity title is displayed."""
+        page.goto(f"{base_url}/test-cases/full-activity-d3/")
+        # Wait for content to load first
+        expect(page.locator("#activityContent")).to_be_visible(timeout=10000)
+        # Title might be h1 or h2 depending on implementation
+        title = page.locator("h1, h2, .activity-title").first
+        expect(title).to_be_visible()
+
+    def test_map_visible(self, page: Page, base_url: str):
+        """Test that the map is displayed."""
+        page.goto(f"{base_url}/test-cases/full-activity-d3/")
+        expect(page.locator("#map")).to_be_visible()
+
+    def test_charts_visible(self, page: Page, base_url: str):
+        """Test that D3 charts are displayed."""
+        page.goto(f"{base_url}/test-cases/full-activity-d3/")
+        # D3 renders SVG charts
+        expect(page.locator("#elevationChart svg")).to_be_visible(timeout=5000)
+        expect(page.locator("#heartRateChart svg")).to_be_visible(timeout=5000)
+        expect(page.locator("#paceChart svg")).to_be_visible(timeout=5000)
+
+    def test_stats_cards_visible(self, page: Page, base_url: str):
+        """Test that statistics cards are displayed."""
+        page.goto(f"{base_url}/test-cases/full-activity-d3/")
+        stat_cards = page.locator(".stat-card")
+        expect(stat_cards.first).to_be_visible()
+
+    def test_unit_toggle_functionality(self, page: Page, base_url: str):
+        """Test that unit toggle works with D3 charts."""
+        page.goto(f"{base_url}/test-cases/full-activity-d3/")
+
+        # Get initial distance value in km
+        distance_card = page.locator(".stat-card").first
+        initial_text = distance_card.text_content()
+        assert "km" in initial_text
+
+        # Toggle to miles
+        page.locator(".toggle-switch .slider").click()
+        time.sleep(0.5)
+
+        # Check that it changed to miles
+        new_text = distance_card.text_content()
+        assert "mi" in new_text
+        assert new_text != initial_text
+
+    def test_no_console_errors(self, page: Page, base_url: str):
+        """Test that D3 version has no console errors."""
+        console_errors = []
+        page.on("console", lambda msg: console_errors.append(msg.text) if msg.type == "error" else None)
+
+        page.goto(f"{base_url}/test-cases/full-activity-d3/")
+        time.sleep(2)  # Wait for any lazy-loaded errors
+
+        # Filter out known acceptable errors (like 404s for optional files)
+        serious_errors = [e for e in console_errors if "404" not in e]
+        assert len(serious_errors) == 0, f"Console errors: {serious_errors}"

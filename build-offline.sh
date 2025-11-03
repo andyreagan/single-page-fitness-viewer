@@ -28,7 +28,7 @@ curl -sL https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js -o libs/
 
 # fit-file-parser
 echo "  - fit-file-parser..."
-curl -sL https://cdn.jsdelivr.net/npm/fit-file-parser@2.0.8/dist/fit-parser.min.js -o libs/fit-parser.js
+curl -sL https://cdn.jsdelivr.net/npm/fit-file-parser@1.21.0/dist/fit-parser.min.js -o libs/fit-parser.js
 
 echo ""
 echo "Dependencies downloaded to libs/"

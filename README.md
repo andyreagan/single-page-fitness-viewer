@@ -21,28 +21,43 @@ Available in two versions: **Chart.js** (recommended, simpler) and **D3.js** (ad
 - Human-readable metadata in YAML or Org-mode format
 - 64x64 photo thumbnails with click-to-expand gallery
 
-## Two Implementations
+## Two Implementations (CDN or Bundled)
 
-This project includes **two complete implementations** of the activity viewer:
+This project includes **two implementations** of the activity viewer, each available in both **CDN** and **bundled/offline** versions:
 
-1. **Chart.js version** (`single-page-local.html`) - Recommended
-   - Simpler API, easier to understand
-   - Smaller file size (~50KB)
-   - Great for most use cases
+### Chart.js Version (Recommended)
+- **CDN version** (`single-page-local.html`, ~50KB)
+  - Loads libraries from CDN, requires internet connection
+  - Smaller file size, faster to load on repeat visits
 
-2. **D3.js version** (`single-page-d3.html`) - Advanced
-   - More powerful and flexible
-   - Fine-grained control over visualizations
-   - Better for custom chart modifications
+- **Bundled version** (`single-page-bundled.html`, ~450KB)
+  - All dependencies inlined, **works completely offline**
+  - No internet connection needed after initial download
 
-Both share the same map (Leaflet.js), file parsing, and metadata handling. Choose whichever you prefer!
+### D3.js Version (Advanced)
+- **CDN version** (`single-page-d3.html`, ~50KB)
+  - Loads libraries from CDN, requires internet connection
+
+- **Bundled version** (`single-page-d3-bundled.html`, ~520KB)
+  - All dependencies inlined, **works completely offline**
+  - No internet connection needed after initial download
+
+**Why two chart libraries?**
+- **Chart.js**: Simpler API, easier to understand, great for most use cases
+- **D3.js**: More powerful, fine-grained control, better for custom visualizations
+
+All versions share the same map (Leaflet.js), file parsing, and metadata handling.
 
 ## Quick Start
 
-1. **Place your activity data in a folder:**
+1. **Choose your version and place your activity data in a folder:**
    ```
    my-activity/
-   ├── index.html          (symlink to single-page-local.html or single-page-d3.html)
+   ├── index.html          (symlink to one of:)
+   │                       (  single-page-bundled.html - recommended, works offline)
+   │                       (  single-page-local.html - smaller, needs internet)
+   │                       (  single-page-d3-bundled.html - D3, works offline)
+   │                       (  single-page-d3.html - D3, needs internet)
    ├── activity.fit        (optional)
    ├── activity.gpx        (optional)
    ├── metadata.yaml       (optional but recommended)
@@ -87,15 +102,21 @@ All fields are optional. You can add any custom fields you want!
 
 ```
 plain-text-fitness/
-├── single-page-local.html    # Chart.js version (recommended)
-├── single-page-d3.html       # D3.js version (advanced)
-└── test-cases/               # Test scenarios
-    ├── full-activity/        # Chart.js: GPS data + metadata
-    ├── full-activity-d3/     # D3.js: GPS data + metadata
-    ├── metadata-only/        # Gym workout (no GPS)
-    ├── with-media/           # GPS data + photos
-    ├── README.md             # Test documentation
-    └── test-runner.html      # Manual test suite
+├── single-page-local.html         # Chart.js (CDN, ~50KB)
+├── single-page-bundled.html       # Chart.js (bundled, ~450KB, offline)
+├── single-page-d3.html            # D3.js (CDN, ~50KB)
+├── single-page-d3-bundled.html    # D3.js (bundled, ~520KB, offline)
+├── build-offline.sh               # Download dependencies
+├── build-bundle.py                # Create bundled versions
+└── test-cases/                    # Test scenarios
+    ├── full-activity/             # Chart.js CDN version test
+    ├── bundled/                   # Chart.js bundled version test
+    ├── full-activity-d3/          # D3.js CDN version test
+    ├── bundled-d3/                # D3.js bundled version test
+    ├── metadata-only/             # Gym workout (no GPS)
+    ├── with-media/                # GPS data + photos
+    ├── README.md                  # Test documentation
+    └── test-runner.html           # Manual test suite
 ```
 
 ## Testing
@@ -144,11 +165,17 @@ See `TESTING.md` for complete documentation.
 
 ## Technology Stack
 
-- **No build step**: Single HTML file with embedded CSS/JS
+- **No build step required**: Single HTML files ready to use
 - **Client-side processing**: All file parsing and rendering happens in your browser
-- **External dependencies**: Libraries loaded from CDN (requires internet connection on first load)
-  - Chart.js version: Leaflet.js, Chart.js, js-yaml, fit-file-parser
-  - D3.js version: Leaflet.js, D3.js, js-yaml, fit-file-parser
+- **Two deployment options**:
+  - **CDN versions**: Small files (~50KB), load libraries from CDN (requires internet)
+  - **Bundled versions**: Large files (~450-520KB), everything inlined (fully offline)
+
+**Dependencies** (auto-bundled in offline versions):
+- Leaflet.js (maps)
+- Chart.js or D3.js (charts)
+- js-yaml (YAML parsing)
+- fit-file-parser (FIT file parsing)
 
 ### Library Choices vs. Competitors
 
@@ -179,7 +206,23 @@ This project follows the "plain text" philosophy:
 - Easy to version control (git)
 - Future-proof: as long as you have a browser, you can view your data
 
-**Note on offline usage**: Currently requires internet connection to load libraries from CDN. A fully bundled offline version could be created in the future.
+**Offline support**: Use the bundled versions (`single-page-bundled.html` or `single-page-d3-bundled.html`) for complete offline functionality. No internet connection required after initial download.
+
+## Building Bundled Versions
+
+The bundled versions are pre-built and included in the repository. To rebuild them:
+
+```bash
+# Download dependencies from CDN
+./build-offline.sh
+
+# Create bundled HTML files
+uv run python build-bundle.py
+```
+
+This will create:
+- `single-page-bundled.html` (Chart.js bundled)
+- `single-page-d3-bundled.html` (D3.js bundled)
 
 ## Export from Strava/Garmin
 
@@ -190,14 +233,19 @@ Then add a `metadata.yaml` with your notes, shoes, weather, etc.
 
 ## Contributing
 
-Two single-file implementations by design:
-- **Chart.js version**: Edit `single-page-local.html`
-- **D3.js version**: Edit `single-page-d3.html`
+Four single-file implementations by design:
+
+**CDN versions** (edit these, then rebuild bundled versions):
+- **Chart.js**: Edit `single-page-local.html`
+- **D3.js**: Edit `single-page-d3.html`
+
+**Bundled versions** (auto-generated):
+- Run `./build-offline.sh && uv run python build-bundle.py` to rebuild
 
 Testing:
-1. Manual: Use `test-cases/test-runner.html`
-2. Automated: Run `uv run pytest test_activity_viewer.py -v`
-   - 37 tests covering both Chart.js and D3.js versions
+1. **Manual**: Use `test-cases/test-runner.html`
+2. **Automated**: Run `uv run pytest test_activity_viewer.py -v`
+   - 41 tests covering all 4 versions (CDN + bundled for both Chart.js and D3.js)
    - Automatic background server management
 
 ## License

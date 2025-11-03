@@ -326,6 +326,38 @@ class TestCrossBrowser:
         expect(page.locator("#map")).to_be_visible()
 
 
+class TestBundledVersion:
+    """Test the bundled/offline Chart.js version."""
+
+    def test_page_loads(self, page: Page, base_url: str):
+        """Test that bundled version loads without errors."""
+        page.goto(f"{base_url}/test-cases/bundled/")
+        expect(page.locator("#activityContent")).to_be_visible(timeout=10000)
+
+    def test_charts_visible(self, page: Page, base_url: str):
+        """Test that Chart.js charts render in bundled version."""
+        page.goto(f"{base_url}/test-cases/bundled/")
+        expect(page.locator("#elevationChart")).to_be_visible(timeout=5000)
+        expect(page.locator("#heartRateChart")).to_be_visible(timeout=5000)
+        expect(page.locator("#paceChart")).to_be_visible(timeout=5000)
+
+
+class TestBundledD3Version:
+    """Test the bundled/offline D3.js version."""
+
+    def test_page_loads(self, page: Page, base_url: str):
+        """Test that bundled D3 version loads without errors."""
+        page.goto(f"{base_url}/test-cases/bundled-d3/")
+        expect(page.locator("#activityContent")).to_be_visible(timeout=10000)
+
+    def test_charts_visible(self, page: Page, base_url: str):
+        """Test that D3 charts render in bundled version."""
+        page.goto(f"{base_url}/test-cases/bundled-d3/")
+        expect(page.locator("#elevationChart svg")).to_be_visible(timeout=5000)
+        expect(page.locator("#heartRateChart svg")).to_be_visible(timeout=5000)
+        expect(page.locator("#paceChart svg")).to_be_visible(timeout=5000)
+
+
 class TestD3Version:
     """Test the D3.js version of the viewer."""
 

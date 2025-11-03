@@ -48,3 +48,6 @@ playwright-report/
 
 # HAR files (browser network captures)
 *.har
+
+# Downloaded libraries (bundled into HTML files)
+libs/

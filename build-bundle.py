@@ -58,9 +58,14 @@ def bundle_html(input_file: str, output_file: str, chart_lib: str):
     yaml_pattern = r'<script src="https://cdn\.jsdelivr\.net/npm/js-yaml@[\d\.]+/dist/js-yaml\.min\.js"></script>'
     html = re.sub(yaml_pattern, lambda m: f'<script>/* js-yaml */\n{js_yaml}\n</script>', html)
 
-    # fit-file-parser
-    fit_pattern = r'<script src="https://cdn\.jsdelivr\.net/npm/fit-file-parser@[\d\.]+/dist/fit-parser\.min\.js"></script>'
-    html = re.sub(fit_pattern, lambda m: f'<script>/* fit-file-parser */\n{fit_parser}\n</script>', html)
+    # fit-file-parser (with CommonJS shim)
+    # Match the shim, library, and global assignment scripts together
+    fit_pattern = r'<script>\s*//[^\n]*CommonJS[^<]*</script>\s*<script src="https://cdn\.jsdelivr\.net/npm/fit-file-parser@[\d\.]+/dist/fit-parser\.min\.js"></script>\s*<script>\s*//[^\n]*FitParser[^<]*</script>'
+    html = re.sub(
+        fit_pattern,
+        lambda m: f'<script>/* fit-file-parser with CommonJS shim */\nvar module = {{ exports: {{}} }};\nvar exports = module.exports;\n{fit_parser}\nwindow.FitParser = module.exports.default || module.exports.FitParser || module.exports;\n</script>',
+        html
+    )
 
     # Add a comment at the top indicating this is a bundled version
     html = re.sub(

@@ -65,7 +65,7 @@ def bundle_html(input_file: str, output_file: str, chart_lib: str):
     # Add a comment at the top indicating this is a bundled version
     html = re.sub(
         r'(<!DOCTYPE html>)',
-        r'\1\n<!-- BUNDLED VERSION: All dependencies inlined for offline use -->',
+        r'\1\n<!-- BUNDLED VERSION: All JavaScript/CSS dependencies inlined.\n     Note: Map tiles still load from OpenStreetMap servers (requires internet for maps).\n     Charts, stats, and data processing work fully offline. -->',
         html
     )
 
@@ -95,9 +95,11 @@ def main():
 
     print("\n✅ Bundled versions created!")
     print("\nFiles created:")
-    print("  - single-page-bundled.html (Chart.js version, fully offline)")
-    print("  - single-page-d3-bundled.html (D3.js version, fully offline)")
-    print("\nThese files work completely offline with no internet connection.")
+    print("  - single-page-bundled.html (Chart.js version)")
+    print("  - single-page-d3-bundled.html (D3.js version)")
+    print("\nNote: All JavaScript/CSS is bundled, but map tiles still load from")
+    print("      OpenStreetMap servers (internet required for maps).")
+    print("      Charts, stats, and data processing work fully offline.")
 
 
 if __name__ == '__main__':

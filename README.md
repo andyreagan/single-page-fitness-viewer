@@ -31,16 +31,18 @@ This project includes **two implementations** of the activity viewer, each avail
   - Smaller file size, faster to load on repeat visits
 
 - **Bundled version** (`single-page-bundled.html`, ~450KB)
-  - All dependencies inlined, **works completely offline**
-  - No internet connection needed after initial download
+  - All JavaScript/CSS dependencies inlined
+  - **Map tiles still load from OpenStreetMap** (requires internet for maps)
+  - Charts, stats, and data parsing work fully offline
 
 ### D3.js Version (Advanced)
 - **CDN version** (`single-page-d3.html`, ~50KB)
   - Loads libraries from CDN, requires internet connection
 
 - **Bundled version** (`single-page-d3-bundled.html`, ~520KB)
-  - All dependencies inlined, **works completely offline**
-  - No internet connection needed after initial download
+  - All JavaScript/CSS dependencies inlined
+  - **Map tiles still load from OpenStreetMap** (requires internet for maps)
+  - Charts, stats, and data parsing work fully offline
 
 **Why two chart libraries?**
 - **Chart.js**: Simpler API, easier to understand, great for most use cases
@@ -169,7 +171,7 @@ See `TESTING.md` for complete documentation.
 - **Client-side processing**: All file parsing and rendering happens in your browser
 - **Two deployment options**:
   - **CDN versions**: Small files (~50KB), load libraries from CDN (requires internet)
-  - **Bundled versions**: Large files (~450-520KB), everything inlined (fully offline)
+  - **Bundled versions**: Large files (~450-520KB), JavaScript/CSS inlined (map tiles still need internet)
 
 **Dependencies** (auto-bundled in offline versions):
 - Leaflet.js (maps)
@@ -206,7 +208,7 @@ This project follows the "plain text" philosophy:
 - Easy to version control (git)
 - Future-proof: as long as you have a browser, you can view your data
 
-**Offline support**: Use the bundled versions (`single-page-bundled.html` or `single-page-d3-bundled.html`) for complete offline functionality. No internet connection required after initial download.
+**Partial offline support**: Bundled versions (`single-page-bundled.html` or `single-page-d3-bundled.html`) have all JavaScript/CSS inlined. However, map tiles still load from OpenStreetMap servers, so **internet connection is required to view maps**. Charts, stats, and all data processing work offline.
 
 ## Building Bundled Versions
 

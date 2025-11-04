@@ -10,15 +10,14 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
-    <script>
-        // Shim for CommonJS exports in browser
-        var module = { exports: {} };
-        var exports = module.exports;
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/fit-file-parser@1.21.0/dist/fit-parser.min.js"></script>
-    <script>
-        // Make FitParser available globally
-        window.FitParser = module.exports.default || module.exports.FitParser || module.exports;
+    <!-- FIT SDK as ES Module - imported and made globally available -->
+    <script type="module">
+        import { Decoder, Stream } from 'https://cdn.jsdelivr.net/npm/@garmin/fitsdk@21.171.0/+esm';
+        // Expose globally for use in the main script
+        window.FitDecoder = Decoder;
+        window.FitStream = Stream;
+        // Dispatch custom event to signal FIT SDK is ready
+        window.dispatchEvent(new Event('fitsdk-ready'));
     </script>
 
 
@@ -556,8 +555,8 @@
     </div>
 
     <script>
-        // Global state
-        let activityData = {
+        // Global state - explicitly on window for accessibility
+        window.activityData = {
             fit: null,
             gpx: null,
             metadata: null,
@@ -565,13 +564,22 @@
             detectedFiles: []
         };
 
-        let map = null;
-        let polyline = null;
-        let hoverMarker = null;
+        window.map = null;
+        window.polyline = null;
+        window.hoverMarker = null;
 
-        let useImperial = false;
-        let mediaFiles = [];
-        let currentMediaIndex = 0;
+        window.useImperial = false;
+        window.mediaFiles = [];
+        window.currentMediaIndex = 0;
+
+        // Local aliases for convenience
+        let activityData = window.activityData;
+        let map = window.map;
+        let polyline = window.polyline;
+        let hoverMarker = window.hoverMarker;
+        let useImperial = window.useImperial;
+        let mediaFiles = window.mediaFiles;
+        let currentMediaIndex = window.currentMediaIndex;
 
         // D3 chart state - shared across all charts for coordinated interaction
         const chartState = {
@@ -584,8 +592,28 @@
         const KM_TO_MI = 0.621371;
         const M_TO_FT = 3.28084;
 
-        // Auto-load on page load
-        window.addEventListener('DOMContentLoaded', autoLoadActivity);
+        // Auto-load on page load - wait for both DOM and FIT SDK to be ready
+        let domReady = false;
+        let fitSdkReady = !!(window.FitDecoder && window.FitStream); // Check if already loaded
+
+        function tryAutoLoad() {
+            if (domReady && fitSdkReady) {
+                autoLoadActivity();
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            domReady = true;
+            tryAutoLoad();
+        });
+
+        window.addEventListener('fitsdk-ready', () => {
+            fitSdkReady = true;
+            tryAutoLoad();
+        });
+
+        // If FIT SDK is already available, try loading now
+        tryAutoLoad();
 
         // Unit toggle handler
         document.addEventListener('DOMContentLoaded', () => {
@@ -784,28 +812,73 @@
         }
 
         async function parseFitData(arrayBuffer) {
-            return new Promise((resolve, reject) => {
-                try {
-                    const fitParser = new FitFileParser({
-                        force: true,
-                        speedUnit: 'km/h',
-                        lengthUnit: 'km',
-                        temperatureUnit: 'celsius',
-                        elapsedRecordField: true,
-                        mode: 'both'
-                    });
-
-                    fitParser.parse(arrayBuffer, (error, data) => {
-                        if (error) {
-                            reject(error);
-                        } else {
-                            resolve(data);
-                        }
-                    });
-                } catch (error) {
-                    reject(error);
+            try {
+                // Wait for ES module to load and expose globals
+                while (!window.FitDecoder || !window.FitStream) {
+                    await new Promise(resolve => setTimeout(resolve, 10));
                 }
-            });
+
+                // Create stream from ArrayBuffer
+                const stream = window.FitStream.fromArrayBuffer(arrayBuffer);
+
+                // Create decoder
+                const decoder = new window.FitDecoder(stream);
+
+                // Check if it's a valid FIT file
+                if (!decoder.isFIT()) {
+                    throw new Error('Not a valid FIT file');
+                }
+
+                // Check integrity (optional but recommended)
+                if (!decoder.checkIntegrity()) {
+                    console.warn('FIT file integrity check failed, but continuing...');
+                }
+
+                // Decode the file
+                const { messages, errors } = decoder.read({
+                    applyScaleAndOffset: true,
+                    expandSubFields: true,
+                    expandComponents: true,
+                    convertTypesToStrings: false,
+                    convertDateTimesToDates: true,
+                    mergeHeartRates: true
+                });
+
+                // Log any errors but don't fail
+                if (errors && errors.length > 0) {
+                    console.warn('FIT decode errors:', errors);
+                }
+
+                // Convert semicircles to degrees (Garmin FIT format)
+                // Semicircles: value * (180 / 2^31)
+                const semicirclesToDegrees = (semicircles) => {
+                    if (semicircles == null) return null;
+                    return semicircles * (180 / Math.pow(2, 31));
+                };
+
+                // Map Garmin SDK field names (camelCase) to old format (snake_case)
+                const records = (messages.recordMesgs || []).map(record => ({
+                    timestamp: record.timestamp,
+                    position_lat: semicirclesToDegrees(record.positionLat),
+                    position_long: semicirclesToDegrees(record.positionLong),
+                    latitude: semicirclesToDegrees(record.positionLat),
+                    longitude: semicirclesToDegrees(record.positionLong),
+                    altitude: record.altitude,
+                    enhanced_altitude: record.enhancedAltitude,
+                    distance: record.distance,
+                    speed: record.speed,
+                    enhanced_speed: record.enhancedSpeed,
+                    heart_rate: record.heartRate,
+                    cadence: record.cadence,
+                    power: record.power,
+                    temperature: record.temperature
+                }));
+
+                // Return in the format expected by our code
+                return { records };
+            } catch (error) {
+                throw new Error(`Failed to parse FIT file: ${error.message}`);
+            }
         }
 
         function parseGpxData(xmlString) {

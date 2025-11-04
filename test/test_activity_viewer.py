@@ -15,18 +15,18 @@ class TestFullActivity:
 
     def test_page_loads(self, page: Page, base_url: str):
         """Test that the page loads without errors."""
-        page.goto(f"{base_url}/test-cases/full-activity/")
+        page.goto(f"{base_url}/test/test-cases/full-activity/")
         # Wait for content to load
         expect(page.locator("#activityContent")).to_be_visible(timeout=10000)
 
     def test_activity_title(self, page: Page, base_url: str):
         """Test that activity title is displayed correctly."""
-        page.goto(f"{base_url}/test-cases/full-activity/")
+        page.goto(f"{base_url}/test/test-cases/full-activity/")
         expect(page.locator("#activityTitle")).to_have_text("Morning Run")
 
     def test_activity_metadata(self, page: Page, base_url: str):
         """Test that date and type are displayed."""
-        page.goto(f"{base_url}/test-cases/full-activity/")
+        page.goto(f"{base_url}/test/test-cases/full-activity/")
         meta = page.locator("#activityMeta")
         expect(meta).to_be_visible()
         # Should contain date and type
@@ -34,19 +34,19 @@ class TestFullActivity:
 
     def test_map_visible(self, page: Page, base_url: str):
         """Test that map is displayed."""
-        page.goto(f"{base_url}/test-cases/full-activity/")
+        page.goto(f"{base_url}/test/test-cases/full-activity/")
         expect(page.locator("#map")).to_be_visible()
 
     def test_charts_visible(self, page: Page, base_url: str):
         """Test that all three charts are displayed."""
-        page.goto(f"{base_url}/test-cases/full-activity/")
+        page.goto(f"{base_url}/test/test-cases/full-activity/")
         expect(page.locator("#elevationChart")).to_be_visible()
         expect(page.locator("#heartRateChart")).to_be_visible()
         expect(page.locator("#paceChart")).to_be_visible()
 
     def test_stats_cards_visible(self, page: Page, base_url: str):
         """Test that stats cards are displayed."""
-        page.goto(f"{base_url}/test-cases/full-activity/")
+        page.goto(f"{base_url}/test/test-cases/full-activity/")
         stats_grid = page.locator("#statsGrid")
         expect(stats_grid).to_be_visible()
 
@@ -56,12 +56,12 @@ class TestFullActivity:
 
     def test_unit_toggle_visible(self, page: Page, base_url: str):
         """Test that km/mi toggle is displayed."""
-        page.goto(f"{base_url}/test-cases/full-activity/")
+        page.goto(f"{base_url}/test/test-cases/full-activity/")
         expect(page.locator("#unitToggle")).to_be_visible()
 
     def test_unit_toggle_functionality(self, page: Page, base_url: str):
         """Test that unit toggle changes values."""
-        page.goto(f"{base_url}/test-cases/full-activity/")
+        page.goto(f"{base_url}/test/test-cases/full-activity/")
 
         # Get initial distance value in km
         distance_card = page.locator(".stat-card").first
@@ -79,7 +79,7 @@ class TestFullActivity:
 
     def test_files_detected(self, page: Page, base_url: str):
         """Test that detected files are shown."""
-        page.goto(f"{base_url}/test-cases/full-activity/")
+        page.goto(f"{base_url}/test/test-cases/full-activity/")
         files_detected = page.locator("#filesDetected")
         expect(files_detected).to_be_visible()
 
@@ -89,7 +89,7 @@ class TestFullActivity:
 
     def test_chart_hover_interaction(self, page: Page, base_url: str):
         """Test that hovering on chart shows crosshair and map marker."""
-        page.goto(f"{base_url}/test-cases/full-activity/")
+        page.goto(f"{base_url}/test/test-cases/full-activity/")
 
         # Wait for charts to render
         chart = page.locator("#elevationChart")
@@ -115,23 +115,23 @@ class TestMetadataOnly:
 
     def test_page_loads(self, page: Page, base_url: str):
         """Test that the page loads without errors."""
-        page.goto(f"{base_url}/test-cases/metadata-only/")
+        page.goto(f"{base_url}/test/test-cases/metadata-only/")
         expect(page.locator("#activityContent")).to_be_visible(timeout=10000)
 
     def test_activity_title(self, page: Page, base_url: str):
         """Test that activity title is displayed."""
-        page.goto(f"{base_url}/test-cases/metadata-only/")
+        page.goto(f"{base_url}/test/test-cases/metadata-only/")
         expect(page.locator("#activityTitle")).to_have_text("Gym Session - Upper Body")
 
     def test_activity_type(self, page: Page, base_url: str):
         """Test that activity type is displayed."""
-        page.goto(f"{base_url}/test-cases/metadata-only/")
+        page.goto(f"{base_url}/test/test-cases/metadata-only/")
         meta = page.locator("#activityMeta")
         expect(meta).to_contain_text("strength-training")
 
     def test_description_visible(self, page: Page, base_url: str):
         """Test that description is displayed."""
-        page.goto(f"{base_url}/test-cases/metadata-only/")
+        page.goto(f"{base_url}/test/test-cases/metadata-only/")
         description_card = page.locator("#descriptionCard")
         expect(description_card).to_be_visible()
 
@@ -142,21 +142,21 @@ class TestMetadataOnly:
 
     def test_map_not_visible(self, page: Page, base_url: str):
         """Test that map is NOT displayed for metadata-only."""
-        page.goto(f"{base_url}/test-cases/metadata-only/")
+        page.goto(f"{base_url}/test/test-cases/metadata-only/")
         # Map should exist in DOM but not have content
         # Since we skip rendering, the map div may be empty or not visible
         pass  # Map rendering is conditional
 
     def test_charts_not_visible(self, page: Page, base_url: str):
         """Test that charts are NOT displayed for metadata-only."""
-        page.goto(f"{base_url}/test-cases/metadata-only/")
+        page.goto(f"{base_url}/test/test-cases/metadata-only/")
         # Charts won't be rendered if there's no GPS data
         # The canvas elements may not exist or be empty
         pass  # Chart rendering is conditional
 
     def test_stats_not_visible(self, page: Page, base_url: str):
         """Test that GPS stats are NOT displayed."""
-        page.goto(f"{base_url}/test-cases/metadata-only/")
+        page.goto(f"{base_url}/test/test-cases/metadata-only/")
         stats_grid = page.locator("#statsGrid")
         # Stats grid should be empty or not rendered
         stat_cards = page.locator(".stat-card")
@@ -164,7 +164,7 @@ class TestMetadataOnly:
 
     def test_unit_toggle_not_visible(self, page: Page, base_url: str):
         """Test that km/mi toggle is NOT displayed."""
-        page.goto(f"{base_url}/test-cases/metadata-only/")
+        page.goto(f"{base_url}/test/test-cases/metadata-only/")
         unit_toggle = page.locator("#unitToggle")
         expect(unit_toggle).to_be_hidden()
 
@@ -174,23 +174,23 @@ class TestWithMedia:
 
     def test_page_loads(self, page: Page, base_url: str):
         """Test that the page loads without errors."""
-        page.goto(f"{base_url}/test-cases/with-media/")
+        page.goto(f"{base_url}/test/test-cases/with-media/")
         expect(page.locator("#activityContent")).to_be_visible(timeout=10000)
 
     def test_activity_title(self, page: Page, base_url: str):
         """Test that activity title is displayed."""
-        page.goto(f"{base_url}/test-cases/with-media/")
+        page.goto(f"{base_url}/test/test-cases/with-media/")
         expect(page.locator("#activityTitle")).to_have_text("Trail Run with Photos")
 
     def test_description_card_visible(self, page: Page, base_url: str):
         """Test that description card is visible."""
-        page.goto(f"{base_url}/test-cases/with-media/")
+        page.goto(f"{base_url}/test/test-cases/with-media/")
         description_card = page.locator("#descriptionCard")
         expect(description_card).to_be_visible()
 
     def test_media_thumbnails_visible(self, page: Page, base_url: str):
         """Test that media thumbnails are displayed."""
-        page.goto(f"{base_url}/test-cases/with-media/")
+        page.goto(f"{base_url}/test/test-cases/with-media/")
 
         # Wait for media detection to complete
         time.sleep(1)
@@ -201,7 +201,7 @@ class TestWithMedia:
 
     def test_thumbnail_size(self, page: Page, base_url: str):
         """Test that thumbnails are 64x64."""
-        page.goto(f"{base_url}/test-cases/with-media/")
+        page.goto(f"{base_url}/test/test-cases/with-media/")
         time.sleep(1)
 
         thumbnail = page.locator(".media-thumbnail").first
@@ -213,7 +213,7 @@ class TestWithMedia:
 
     def test_modal_opens_on_click(self, page: Page, base_url: str):
         """Test that clicking thumbnail opens modal."""
-        page.goto(f"{base_url}/test-cases/with-media/")
+        page.goto(f"{base_url}/test/test-cases/with-media/")
         time.sleep(1)
 
         # Click first thumbnail
@@ -226,7 +226,7 @@ class TestWithMedia:
 
     def test_modal_close_button(self, page: Page, base_url: str):
         """Test that close button closes modal."""
-        page.goto(f"{base_url}/test-cases/with-media/")
+        page.goto(f"{base_url}/test/test-cases/with-media/")
         time.sleep(1)
 
         # Open modal
@@ -241,7 +241,7 @@ class TestWithMedia:
 
     def test_modal_escape_key(self, page: Page, base_url: str):
         """Test that ESC key closes modal."""
-        page.goto(f"{base_url}/test-cases/with-media/")
+        page.goto(f"{base_url}/test/test-cases/with-media/")
         time.sleep(1)
 
         # Open modal
@@ -256,7 +256,7 @@ class TestWithMedia:
 
     def test_modal_navigation_arrows(self, page: Page, base_url: str):
         """Test that arrow keys navigate between images."""
-        page.goto(f"{base_url}/test-cases/with-media/")
+        page.goto(f"{base_url}/test/test-cases/with-media/")
         time.sleep(1)
 
         # Open modal
@@ -284,7 +284,7 @@ class TestWithMedia:
 
     def test_all_gps_features_work(self, page: Page, base_url: str):
         """Test that all GPS features from Test 1 also work here."""
-        page.goto(f"{base_url}/test-cases/with-media/")
+        page.goto(f"{base_url}/test/test-cases/with-media/")
 
         # Map should be visible
         expect(page.locator("#map")).to_be_visible()
@@ -310,7 +310,7 @@ class TestCrossBrowser:
         errors = []
         page.on("console", lambda msg: errors.append(msg) if msg.type == "error" else None)
 
-        page.goto(f"{base_url}/test-cases/full-activity/")
+        page.goto(f"{base_url}/test/test-cases/full-activity/")
         time.sleep(2)
 
         # Should have no errors
@@ -319,7 +319,7 @@ class TestCrossBrowser:
     def test_responsive_layout(self, page: Page, base_url: str):
         """Test that layout works on mobile viewport."""
         page.set_viewport_size({"width": 375, "height": 667})  # iPhone SE
-        page.goto(f"{base_url}/test-cases/full-activity/")
+        page.goto(f"{base_url}/test/test-cases/full-activity/")
 
         # Content should still be visible
         expect(page.locator("#activityContent")).to_be_visible()
@@ -331,12 +331,12 @@ class TestBundledVersion:
 
     def test_page_loads(self, page: Page, base_url: str):
         """Test that bundled version loads without errors."""
-        page.goto(f"{base_url}/test-cases/bundled/")
+        page.goto(f"{base_url}/test/test-cases/bundled/")
         expect(page.locator("#activityContent")).to_be_visible(timeout=10000)
 
     def test_charts_visible(self, page: Page, base_url: str):
         """Test that Chart.js charts render in bundled version."""
-        page.goto(f"{base_url}/test-cases/bundled/")
+        page.goto(f"{base_url}/test/test-cases/bundled/")
         expect(page.locator("#elevationChart")).to_be_visible(timeout=5000)
         expect(page.locator("#heartRateChart")).to_be_visible(timeout=5000)
         expect(page.locator("#paceChart")).to_be_visible(timeout=5000)
@@ -347,12 +347,12 @@ class TestBundledD3Version:
 
     def test_page_loads(self, page: Page, base_url: str):
         """Test that bundled D3 version loads without errors."""
-        page.goto(f"{base_url}/test-cases/bundled-d3/")
+        page.goto(f"{base_url}/test/test-cases/bundled-d3/")
         expect(page.locator("#activityContent")).to_be_visible(timeout=10000)
 
     def test_charts_visible(self, page: Page, base_url: str):
         """Test that D3 charts render in bundled version."""
-        page.goto(f"{base_url}/test-cases/bundled-d3/")
+        page.goto(f"{base_url}/test/test-cases/bundled-d3/")
         expect(page.locator("#elevationChart svg")).to_be_visible(timeout=5000)
         expect(page.locator("#heartRateChart svg")).to_be_visible(timeout=5000)
         expect(page.locator("#paceChart svg")).to_be_visible(timeout=5000)
@@ -363,12 +363,12 @@ class TestD3Version:
 
     def test_page_loads(self, page: Page, base_url: str):
         """Test that the D3 version page loads without errors."""
-        page.goto(f"{base_url}/test-cases/full-activity-d3/")
+        page.goto(f"{base_url}/test/test-cases/full-activity-d3/")
         expect(page.locator("#activityContent")).to_be_visible(timeout=10000)
 
     def test_activity_title(self, page: Page, base_url: str):
         """Test that activity title is displayed."""
-        page.goto(f"{base_url}/test-cases/full-activity-d3/")
+        page.goto(f"{base_url}/test/test-cases/full-activity-d3/")
         # Wait for content to load first
         expect(page.locator("#activityContent")).to_be_visible(timeout=10000)
         # Title might be h1 or h2 depending on implementation
@@ -377,12 +377,12 @@ class TestD3Version:
 
     def test_map_visible(self, page: Page, base_url: str):
         """Test that the map is displayed."""
-        page.goto(f"{base_url}/test-cases/full-activity-d3/")
+        page.goto(f"{base_url}/test/test-cases/full-activity-d3/")
         expect(page.locator("#map")).to_be_visible()
 
     def test_charts_visible(self, page: Page, base_url: str):
         """Test that D3 charts are displayed."""
-        page.goto(f"{base_url}/test-cases/full-activity-d3/")
+        page.goto(f"{base_url}/test/test-cases/full-activity-d3/")
         # D3 renders SVG charts
         expect(page.locator("#elevationChart svg")).to_be_visible(timeout=5000)
         expect(page.locator("#heartRateChart svg")).to_be_visible(timeout=5000)
@@ -390,13 +390,13 @@ class TestD3Version:
 
     def test_stats_cards_visible(self, page: Page, base_url: str):
         """Test that statistics cards are displayed."""
-        page.goto(f"{base_url}/test-cases/full-activity-d3/")
+        page.goto(f"{base_url}/test/test-cases/full-activity-d3/")
         stat_cards = page.locator(".stat-card")
         expect(stat_cards.first).to_be_visible()
 
     def test_unit_toggle_functionality(self, page: Page, base_url: str):
         """Test that unit toggle works with D3 charts."""
-        page.goto(f"{base_url}/test-cases/full-activity-d3/")
+        page.goto(f"{base_url}/test/test-cases/full-activity-d3/")
 
         # Get initial distance value in km
         distance_card = page.locator(".stat-card").first
@@ -417,7 +417,7 @@ class TestD3Version:
         console_errors = []
         page.on("console", lambda msg: console_errors.append(msg.text) if msg.type == "error" else None)
 
-        page.goto(f"{base_url}/test-cases/full-activity-d3/")
+        page.goto(f"{base_url}/test/test-cases/full-activity-d3/")
         time.sleep(2)  # Wait for any lazy-loaded errors
 
         # Filter out known acceptable errors (like 404s for optional files)

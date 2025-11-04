@@ -26,20 +26,20 @@ Available in two versions: **Chart.js** (recommended, simpler) and **D3.js** (ad
 This project includes **two implementations** of the activity viewer, each available in both **CDN** and **bundled/offline** versions:
 
 ### Chart.js Version (Recommended)
-- **CDN version** (`single-page-local.html`, ~50KB)
+- **CDN version** (`src/single-page-chartjs.html`, ~55KB)
   - Loads libraries from CDN, requires internet connection
   - Smaller file size, faster to load on repeat visits
 
-- **Bundled version** (`single-page-bundled.html`, ~450KB)
+- **Bundled version** (`dist/single-page-chartjs-bundled.html`, ~830KB)
   - All JavaScript/CSS dependencies inlined
   - **Map tiles still load from OpenStreetMap** (requires internet for maps)
   - Charts, stats, and data parsing work fully offline
 
 ### D3.js Version (Advanced)
-- **CDN version** (`single-page-d3.html`, ~50KB)
+- **CDN version** (`src/single-page-d3.html`, ~55KB)
   - Loads libraries from CDN, requires internet connection
 
-- **Bundled version** (`single-page-d3-bundled.html`, ~520KB)
+- **Bundled version** (`dist/single-page-d3-bundled.html`, ~900KB)
   - All JavaScript/CSS dependencies inlined
   - **Map tiles still load from OpenStreetMap** (requires internet for maps)
   - Charts, stats, and data parsing work fully offline
@@ -56,10 +56,10 @@ All versions share the same map (Leaflet.js), file parsing, and metadata handlin
    ```
    my-activity/
    ├── index.html          (symlink to one of:)
-   │                       (  single-page-bundled.html - recommended, works offline)
-   │                       (  single-page-local.html - smaller, needs internet)
-   │                       (  single-page-d3-bundled.html - D3, works offline)
-   │                       (  single-page-d3.html - D3, needs internet)
+   │                       (  dist/single-page-chartjs-bundled.html - recommended, works offline)
+   │                       (  src/single-page-chartjs.html - smaller, needs internet)
+   │                       (  dist/single-page-d3-bundled.html - D3, works offline)
+   │                       (  src/single-page-d3.html - D3, needs internet)
    ├── activity.fit        (optional)
    ├── activity.gpx        (optional)
    ├── metadata.yaml       (optional but recommended)
@@ -104,29 +104,41 @@ All fields are optional. You can add any custom fields you want!
 
 ```
 plain-text-fitness/
-├── single-page-local.html         # Chart.js (CDN, ~50KB)
-├── single-page-bundled.html       # Chart.js (bundled, ~450KB, offline)
-├── single-page-d3.html            # D3.js (CDN, ~50KB)
-├── single-page-d3-bundled.html    # D3.js (bundled, ~520KB, offline)
-├── build-offline.sh               # Download dependencies
-├── build-bundle.py                # Create bundled versions
-└── test-cases/                    # Test scenarios
-    ├── full-activity/             # Chart.js CDN version test
-    ├── bundled/                   # Chart.js bundled version test
-    ├── full-activity-d3/          # D3.js CDN version test
-    ├── bundled-d3/                # D3.js bundled version test
-    ├── metadata-only/             # Gym workout (no GPS)
-    ├── with-media/                # GPS data + photos
-    ├── README.md                  # Test documentation
-    └── test-runner.html           # Manual test suite
+├── src/                                    # Source files (edit these)
+│   ├── single-page-chartjs.html           # Chart.js version (CDN, ~55KB)
+│   └── single-page-d3.html                # D3.js version (CDN, ~55KB)
+├── dist/                                   # Built files (auto-generated, committed)
+│   ├── single-page-chartjs-bundled.html   # Chart.js bundled (~830KB)
+│   └── single-page-d3-bundled.html        # D3.js bundled (~900KB)
+├── test/                                   # All test-related files
+│   ├── test_activity_viewer.py            # Playwright tests (41 tests)
+│   ├── conftest.py                        # Pytest configuration
+│   └── test-cases/                        # Test fixtures (sample data)
+│       ├── full-activity/                 # Chart.js CDN version
+│       ├── bundled/                       # Chart.js bundled version
+│       ├── full-activity-d3/              # D3.js CDN version
+│       ├── bundled-d3/                    # D3.js bundled version
+│       ├── metadata-only/                 # Gym workout (no GPS)
+│       └── with-media/                    # GPS data + photos
+├── Makefile                               # Build and test automation
+├── build-bundle.py                        # Build script (called by Makefile)
+└── pyproject.toml                         # Python dependencies and config
 ```
+
+### Development Workflow
+
+1. **Edit source files** in `src/`
+2. **Run build** to update `dist/`: `make build`
+3. **Run tests**: `make test`
+
+See `make help` for all available targets.
 
 ## Testing
 
 ### Manual Testing
 ```bash
 python3 -m http.server 8000
-# Visit: http://localhost:8000/test-cases/test-runner.html
+# Visit: http://localhost:8000/test/test-cases/test-runner.html
 ```
 
 ### Automated Testing
@@ -208,23 +220,30 @@ This project follows the "plain text" philosophy:
 - Easy to version control (git)
 - Future-proof: as long as you have a browser, you can view your data
 
-**Partial offline support**: Bundled versions (`single-page-bundled.html` or `single-page-d3-bundled.html`) have all JavaScript/CSS inlined. However, map tiles still load from OpenStreetMap servers, so **internet connection is required to view maps**. Charts, stats, and all data processing work offline.
+**Partial offline support**: Bundled versions (`dist/single-page-chartjs-bundled.html` and `dist/single-page-d3-bundled.html`) have all JavaScript/CSS inlined. However, map tiles still load from OpenStreetMap servers, so **internet connection is required to view maps**. Charts, stats, and all data processing work offline.
 
 ## Building Bundled Versions
 
-The bundled versions are pre-built and included in the repository. To rebuild them:
+The bundled versions in `dist/` are pre-built and included in the repository. To rebuild them after editing source files in `src/`:
 
 ```bash
-# Download dependencies from CDN
-./build-offline.sh
-
-# Create bundled HTML files
-uv run python build-bundle.py
+make build
 ```
 
-This will create:
-- `single-page-bundled.html` (Chart.js bundled)
-- `single-page-d3-bundled.html` (D3.js bundled)
+This will:
+1. Download dependencies from CDN to `libs/`
+2. Build bundled HTML files in `dist/`
+
+Available targets:
+- `make deps` - Download JavaScript dependencies only
+- `make build` - Build bundled HTML files (includes deps)
+- `make test` - Run all tests with pytest
+- `make clean` - Remove libs/ and dist/ directories
+- `make help` - Show all available targets
+
+This will create/update:
+- `dist/single-page-chartjs-bundled.html` (Chart.js bundled ~830KB)
+- `dist/single-page-d3-bundled.html` (D3.js bundled ~900KB)
 
 ## Export from Strava/Garmin
 
@@ -235,20 +254,35 @@ Then add a `metadata.yaml` with your notes, shoes, weather, etc.
 
 ## Contributing
 
-Four single-file implementations by design:
+This project maintains clean separation between source and built files:
 
-**CDN versions** (edit these, then rebuild bundled versions):
-- **Chart.js**: Edit `single-page-local.html`
-- **D3.js**: Edit `single-page-d3.html`
+### Source Files (edit these)
+- `src/single-page-chartjs.html` - Chart.js version with CDN dependencies
+- `src/single-page-d3.html` - D3.js version with CDN dependencies
 
-**Bundled versions** (auto-generated):
-- Run `./build-offline.sh && uv run python build-bundle.py` to rebuild
+### Build Process
+After editing source files, rebuild the bundled versions:
+```bash
+make build                      # Download dependencies + generate dist/ files
+```
 
-Testing:
-1. **Manual**: Use `test-cases/test-runner.html`
-2. **Automated**: Run `uv run pytest test_activity_viewer.py -v`
-   - 41 tests covering all 4 versions (CDN + bundled for both Chart.js and D3.js)
+This creates:
+- `dist/single-page-chartjs-bundled.html` (auto-generated)
+- `dist/single-page-d3-bundled.html` (auto-generated)
+
+**Note**: The `dist/` directory IS committed to the repository so users get pre-built files.
+
+### Testing
+1. **Automated** (recommended): `make test`
+   - 41 tests covering all 4 versions
+   - Tests in `test/test_activity_viewer.py`
    - Automatic background server management
+
+2. **Manual**:
+   ```bash
+   python3 -m http.server 8000
+   # Visit: http://localhost:8000/test/test-cases/test-runner.html
+   ```
 
 ## License
 

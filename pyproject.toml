@@ -13,10 +13,6 @@ dependencies = [
 [tool.pytest.ini_options]
 minversion = "7.0"
 addopts = "-ra -q --tb=short"
-testpaths = ["."]
-python_files = ["test_*.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
 
 [build-system]
 requires = ["setuptools>=61.0"]

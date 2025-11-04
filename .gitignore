@@ -10,7 +10,6 @@ venv/
 ENV/
 build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/
@@ -23,6 +22,10 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+
+# Note: dist/ is NOT ignored - we commit bundled HTML files there
+# It's common to ignore dist/ for Python packages, but this project
+# intentionally commits dist/ with pre-built bundled HTML files
 
 # Testing
 .pytest_cache/

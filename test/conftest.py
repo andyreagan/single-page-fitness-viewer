@@ -88,7 +88,8 @@ def page(context: BrowserContext):
 def background_server():
     """Start background HTTP server for tests."""
     import os
-    cwd = os.path.dirname(os.path.abspath(__file__))
+    # Run server from project root, not test directory
+    cwd = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     server_ctx = gen_background_server_ctxmanager(
         cmd=["python", "-m", "http.server", "8000"],
         cwd=cwd,

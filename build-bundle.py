@@ -25,7 +25,7 @@ def bundle_html(input_file: str, output_file: str, chart_lib: str):
     leaflet_css = (libs_dir / 'leaflet.css').read_text()
     leaflet_js = (libs_dir / 'leaflet.js').read_text()
     js_yaml = (libs_dir / 'js-yaml.js').read_text()
-    fit_parser = (libs_dir / 'fit-parser.js').read_text()
+    fit_sdk = (libs_dir / 'fitsdk.js').read_text()
 
     if chart_lib == 'chartjs':
         chart_js = (libs_dir / 'chart.js').read_text()
@@ -58,14 +58,30 @@ def bundle_html(input_file: str, output_file: str, chart_lib: str):
     yaml_pattern = r'<script src="https://cdn\.jsdelivr\.net/npm/js-yaml@[\d\.]+/dist/js-yaml\.min\.js"></script>'
     html = re.sub(yaml_pattern, lambda m: f'<script>/* js-yaml */\n{js_yaml}\n</script>', html)
 
-    # fit-file-parser (with CommonJS shim)
-    # Match the shim, library, and global assignment scripts together
-    fit_pattern = r'<script>\s*//[^\n]*CommonJS[^<]*</script>\s*<script src="https://cdn\.jsdelivr\.net/npm/fit-file-parser@[\d\.]+/dist/fit-parser\.min\.js"></script>\s*<script>\s*//[^\n]*FitParser[^<]*</script>'
-    html = re.sub(
-        fit_pattern,
-        lambda m: f'<script>/* fit-file-parser with CommonJS shim */\nvar module = {{ exports: {{}} }};\nvar exports = module.exports;\n{fit_parser}\nwindow.FitParser = module.exports.default || module.exports.FitParser || module.exports;\n</script>',
-        html
-    )
+    # Garmin FIT SDK (ES Module) - bundled inline with blob URL
+    # Match the entire ES module script block
+    fit_pattern = r'<!-- FIT SDK as ES Module[^>]*>\s*<script type="module">\s*import[^<]+from[^;]+;\s*//[^<]+\s*window\.FitDecoder[^<]+\s*window\.FitStream[^<]+\s*</script>'
+
+    # Create inline module using blob URL to load the bundled FIT SDK
+    def create_fit_replacement(match):
+        # Escape backticks and ${} in the fit_sdk content for template literal
+        escaped_sdk = fit_sdk.replace('\\', '\\\\').replace('`', '\\`').replace('${', '\\${')
+        return f'''<!-- FIT SDK as ES Module - bundled inline -->
+    <script type="module">
+        /* @garmin/fitsdk bundled by jsDelivr */
+        const fitSdkCode = `{escaped_sdk}`;
+        const blob = new Blob([fitSdkCode], {{ type: 'text/javascript' }});
+        const url = URL.createObjectURL(blob);
+        const module = await import(url);
+        URL.revokeObjectURL(url);
+        // Expose to window
+        window.FitDecoder = module.Decoder;
+        window.FitStream = module.Stream;
+        // Dispatch custom event to signal FIT SDK is ready
+        window.dispatchEvent(new Event('fitsdk-ready'));
+    </script>'''
+
+    html = re.sub(fit_pattern, create_fit_replacement, html, flags=re.DOTALL)
 
     # Add a comment at the top indicating this is a bundled version
     html = re.sub(
@@ -90,18 +106,24 @@ def main():
         print("Run ./build-offline.sh first to download dependencies.")
         return
 
+    # Ensure dist directory exists
+    Path('dist').mkdir(exist_ok=True)
+
     print("Building bundled/offline versions...")
 
     # Bundle Chart.js version
-    bundle_html('single-page-local.html', 'single-page-bundled.html', 'chartjs')
+    bundle_html('src/single-page-chartjs.html', 'dist/single-page-chartjs-bundled.html', 'chartjs')
 
     # Bundle D3.js version
-    bundle_html('single-page-d3.html', 'single-page-d3-bundled.html', 'd3')
+    bundle_html('src/single-page-d3.html', 'dist/single-page-d3-bundled.html', 'd3')
 
-    print("\n✅ Bundled versions created!")
+    print("\n✅ Bundled versions created in dist/!")
     print("\nFiles created:")
-    print("  - single-page-bundled.html (Chart.js version)")
-    print("  - single-page-d3-bundled.html (D3.js version)")
+    print("  - dist/single-page-chartjs-bundled.html (Chart.js bundled)")
+    print("  - dist/single-page-d3-bundled.html (D3.js bundled)")
+    print("\nSource files:")
+    print("  - src/single-page-chartjs.html (Chart.js source)")
+    print("  - src/single-page-d3.html (D3.js source)")
     print("\nNote: All JavaScript/CSS is bundled, but map tiles still load from")
     print("      OpenStreetMap servers (internet required for maps).")
     print("      Charts, stats, and data processing work fully offline.")
